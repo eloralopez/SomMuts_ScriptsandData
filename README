@@ -1,0 +1,23 @@
+README
+
+The following steps will take a VCF file with multiple genotyped samples and produce a list of putative somatic mutation sites, the genotypes at each putative site for each sample, and the characteristics of each putative mutation.
+
+The steps shown here use colony AH09 as an example.
+
+1. run VCFtodatatable_test20180611.py
+
+input file: AH09_Aug2011_cohort_20180106_merged_filtered_nomissing_nosym_noblanks.vcf
+output file: AH09datatable20181029.txt
+
+2. run AH75melted.R
+input file: AH09datatable20181029.txt
+output file: meltedAH09datatable20181029.txt
+
+3. run counttransitiontypes2_test_2ndtest20181029.py
+input files: AH09datatable20181029.txt , Genotypes_trimmed.txt , meltedAH09datatable20181029.txt
+output file: meltedAH09datatable_withtransitionandpopinfo.txt
+
+4. do Sanger verifications, update your files accordingly.
+output file: melted_AH09_datatable20181029_withtransitionandpopinfo_withverificationsFOR_R.txt
+
+5. Analyses in R
