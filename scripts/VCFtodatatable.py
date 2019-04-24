@@ -2,15 +2,15 @@
 
 
 #####
-#DESCRIPTION: take in VCF, filters out the sites that have the same genotype in all branches, outputs genoytpes for the variable sites
+#DESCRIPTION: read in VCF, filters out the sites that have the same genotype in all branches. Outputs genotype, allele depths, and total depth for each of the samples at each variable site.
 
 import sys
 
 
 input = open(sys.argv[1],'r') #example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/AH09_Aug2011_cohort_20180106_merged_filtered_nomissing_nosym_noblanks.vcf
 #another example: /Users/eloralopez/Documents/SomaticMutations/gnomex/OfuAug2013_75_cohort_merged_filtered.vcf
-output = sys.argv[2] #example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/AH09datatable.txt
-#another example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/AH88datatable.txt
+output = sys.argv[2] #example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/AH09datatable20181029.txt
+
 
 with open(output, "w") as out_file:
     #header = ["chrom.pos", "ref", "alt", "AH88_1", "AH88_10", "AH88_11", "AH88_12", "AH88_13", "AH88_14", "AH88_15", "AH88_16", "AH88_17", "AH88_2", "AH88_3","AH88_4", "AH88_5", "AH88_6", "AH88_7", "AH88_8", "AH88_9"]
@@ -23,7 +23,7 @@ with open(output, "w") as out_file:
         if line.startswith('#'): #ignores all the header lines
 
             continue
-        if not line.startswith('contig'): #ignores all those that are symbiont (NOT CORAL) contigs
+        if not line.startswith('contig'): #ignores all those that are not coral contigs
             continue
 
         else:
@@ -84,18 +84,12 @@ with open(output, "w") as out_file:
                     a2 = alt_allele
                 genostring = a1 + '/' + a2
                 genoPLUSdepth = genostring + "," + totaldepth_atlocus + "," + refdepth + ","  + altdepth
-                # print(genoPLUSdepth)
+
                 genoplusdepthlist.append(genoPLUSdepth)
                 genoPLUSdepth = '\t'.join(genoplusdepthlist)
-                # print(genoPLUSdepth)
+
                 geno_list.append(genostring)
                 genostring = '\t'.join(geno_list)
-                # print(genostring)
-                # genoplusdepthlist.append(genoPLUSdepth)
-                
-    #
-            #genoPLUSdepth = '\t'.join(genoplusdepthlist)
-
             
             if all(x==geno_list[0] for x in geno_list):
                 continue #ignores all sites that are not variable within-colony 
@@ -110,3 +104,5 @@ with open(output, "w") as out_file:
 input.close()
 
 out_file.close()
+
+

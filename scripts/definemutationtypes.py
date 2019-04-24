@@ -1,14 +1,14 @@
 #!/usr/bin/env python
 
-#DESCRIPTION: identifies transitions/transversions,  denovo/LoH, presence in population, and outputs into melted datable 
+#DESCRIPTION: Defines each putative mutations as either a transition or transversion, either  denovo or LoH, and whether it's been seen before in the population or not. Outputs the information into melted data table 
 
 import sys
 
-polymorphic = sys.argv[1] #example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/AH09datatable.txt
+polymorphic = sys.argv[1] #example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/AH09datatable20181029.txt
 popdata = sys.argv[2] #example: /Users/eloralopez/Documents/SomaticMutations/RTE_new/Genotypes_trimmed.txt
 
-melted = sys.argv[3] #Example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/meltedAH09datatable.txt
-output = sys.argv[4] #example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/meltedAH09datatable_withtransitionandpopinfo.txt
+melted = sys.argv[3] #Example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/meltedAH09datatable20181029.txt
+output = sys.argv[4] #example: /Users/eloralopez/Documents/SomaticMutations/OfuAug/meltedAH09datatable20181029_withtransitionandpopinfo.txt
 
 def most_common(lst):
     return max(set(lst), key=lst.count)
@@ -59,7 +59,7 @@ with open(polymorphic, "r") as vcf_file:
         out_file.write(header_output + '\n')
 
         for line in vcf_file:
-            if line.startswith('chrom.pos'):
+            if line.startswith('chrom.pos'): #skips the header line
 
                 continue
 
@@ -248,11 +248,11 @@ with open(polymorphic, "r") as vcf_file:
                     with open(melted, "r") as melted_file:
                         
                         for line in melted_file:
-                            # depth_list =[]
+
                             if line.startswith('chrom.pos'):
-                    #
+
                                 continue
-                    #
+
                             else:
                                 meltsplit = line.rstrip().split('\t')
                                 meltconcatenated=meltsplit[0]
@@ -264,7 +264,7 @@ with open(polymorphic, "r") as vcf_file:
                     
                                     melt_the_genotype = split[0]
                                     melt_the_depth = split[1]
-                                    # depth_list.append(melt_the_depth)
+
                                     
                                 if meltconcatenated ==concatenated:
                                     AtoGstr = (str(AtoG))
@@ -290,28 +290,11 @@ with open(polymorphic, "r") as vcf_file:
                                     TtoAstr = (str(TtoA))
 
                                     TtoGstr = (str(TtoG))
-                                    transhead = "", "A", "C", "G", "T"
-                                    Atrans = "A", "--", AtoCstr, AtoGstr, AtoTstr
-                                    Ctrans = "C", CtoAstr, "--", CtoGstr, CtoTstr
-                                    Gtrans = "G", GtoAstr, GtoCstr, "--", GtoTstr
-                                    Ttrans = "T", TtoAstr, TtoCstr, TtoGstr, "--"
 
-
-
-                                    # outlist = [concatenated, genotypes[0], genotypes[1], genotypes[2], genotypes[3],genotypes[4],genotypes[5],genotypes[6],genotypes[7],genotypes[8],genotypes[9],genotypes[10],genotypes[11],genotypes[12],genotypes[13],genotypes[14],genotypes[15],genotypes[16],genotypes[17],genotypes[18],genotypes[19],genotypes[20],genotypes[21]]#,DeNovo_or_LoH, TiTv, str(PopulationPoly)]
                                     outlist = [meltconcatenated, meltsample, ref, alt, meltgenotypes, DeNovo_or_LoH, TiTv, WhattoWhat, str(PopulationPoly)]
                                     outstring = '\t'.join(outlist)
                                     print(outstring)
                                     out_file.write(outstring+'\n')
-#     #     transout = "\t".join(transhead) + "\n" + "\t".join(Atrans) + "\n" + "\t".join(Ctrans) + "\n" + "\t".join(Gtrans) + "\n" + "\t".join(Ttrans)
-#     # print(transout)
-#     #
-#     # print(homo2het, het2homo)
-#     # transversions = int(AtoTstr) + int(TtoAstr) + int(CtoGstr) + int(GtoCstr) + int(CtoAstr) + int(GtoTstr) + int(AtoCstr) + int(TtoGstr)
-#     # transitions = int(CtoTstr) + int(GtoAstr) + int(TtoCstr) + int(AtoGstr)
-#     #
-#     # print(transitions, "\n",transversions)
-#
-#
-#
-#
+
+
+
