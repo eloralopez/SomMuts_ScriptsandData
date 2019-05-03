@@ -530,6 +530,7 @@ verATGClist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="AtoG" | u
 	verATGCcount<-nrow(verATGClist)
 	verATGCprop<-verATGCcount/uniqueverifiedcount
 	SEverATGCprop<-se(verATGCprop)
+	
 	verGCATlist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="GtoA" | uniqueverifiedlist$WhattoWhat=="CtoT"),]
 	verGCATcount<-nrow(verGCATlist)
 	verGCATprop<-verGCATcount/uniqueverifiedcount
@@ -549,12 +550,12 @@ verATGClist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="AtoG" | u
 	verGCTAlist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="GtoT" | uniqueverifiedlist$WhattoWhat=="CtoA"),]
 	verGCTAcount<-nrow(verGCTAlist)
 	verGCTAprop<-verGCTAcount/uniqueverifiedcount
-	vertypesDF<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"), Proportion=c(verATGCprop, 	verGCATprop, verATTAprop,verACTGprop, verGCCGprop, verGCTAprop))
+	vertypesDF<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"), coralProportion=c(verATGCprop, 	verGCATprop, verATTAprop,verACTGprop, verGCCGprop, verGCTAprop))
 	
 #"A>G,T>C","G>A,C>T","A>T,T>A","A>C,T>G","G>C,C>G","G>T,C>A"
 #FIGURE 4:
 par(mfrow=c(1,4))
-	vertypesDFplot<-barplot(vertypesDF$Proportion,names.arg=vertypesDF$Types, ylim=c(0,0.7), main="Mutation spectrum across 4 colonies", las=2) #Figure 4a
+	vertypesDFplot<-barplot(vertypesDF$coralProportion,names.arg=vertypesDF$Types, ylim=c(0,0.7), main="Mutation spectrum across 4 colonies", las=2) #Figure 4a
 	
 #humantypesDF<-data.frame(Types=c("ATtoGC","GCtoAT","ATtoTA","ATtoCG","GCtoCG","GCtoTA"), Proportion=c(.221, .408, .067, .078, .125, .110))
 #humantypesDFplot<-barplot(humantypesDF$Proportion, names.arg=humantypesDF$Types, ylim=c(0,0.7), main="Human Germline Spectrum",las=2)# find the citation
@@ -583,3 +584,57 @@ UVtypesDFplot<-barplot(UVtypesDF$Proportion, names.arg=UVtypesDF$Types, ylim=c(0
 Transtions<- verATGCprop + verGCATprop
 Transversions<- verATTAprop+verACTGprop+verGCCGprop+verGCTAprop
 TiTv<- Transtions/Transversions
+
+##make a contingency table for chi-square test##
+types<-c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A")
+coralcounts<-c(verATGCcount,verGCATcount, verATTAcount, verACTGcount, verGCCGcount, verGCTAcount)
+humanesophaguscounts<-c(1200,700,3300,900,1500,450)
+humangermcounts<-c(192, 321, 41, 58, 63, 72)
+
+contingency<-data.frame("coralmuts"= coralcounts, "humanUV"=(3500*UVtypesDF$Proportion),"humanesophagus"=humanesophaguscounts, "humangerm"= humangermcounts)
+
+c.humangerm<-data.frame("coralmuts"=coralcounts, "humangerm"=humangermcounts)
+
+c.humaneso<-data.frame("coralmuts"= coralcounts, "humaneso"=humanesophaguscounts)
+	
+c.humanUV<-data.frame("coralmuts"= coralcounts, "humanUV"=(3500*UVtypesDF$Proportion))
+
+#info about contingency tables here: http://www.sthda.com/english/wiki/chi-square-test-of-independence-in-r#data-format-contingency-tables
+
+chi<- chisq.test(contingency)
+chi2<- chisq.test(c.humangerm)
+chi3<- chisq.test(c.humaneso)
+chi4<-chisq.test(c.humanUV)
+chi$observed
+chi$expected
+chi$residuals
+chi$p.value
+chi$estimate
+chi$statistic
+chi$parameter
+
+
+#Let’s visualize Pearson residuals using the package corrplot:
+library(corrplot)
+corrplot(chi$residuals, is.cor = FALSE)
+
+# Contibution in percentage (%)
+contrib <- 100*chi$residuals^2/chi$statistic
+round(contrib, 3)
+
+# Visualize the contribution
+corrplot(contrib, is.cor = FALSE)
+
+#library(graphics)
+#mosaicplot(contingency, shade = TRUE, las=2,
+           main = "housetasks")
+           
+install.packages("vcd")
+library("vcd")
+# plot just a subset of the table
+assoc(head(contingency), shade = TRUE, las=3)
+
+
+file_path <- "http://www.sthda.com/sthda/RDoc/data/housetasks.txt"
+housetasks <- read.delim(file_path, row.names = 1)
+chisq.test(housetasks)
