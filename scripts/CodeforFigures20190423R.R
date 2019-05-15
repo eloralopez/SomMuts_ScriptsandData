@@ -591,7 +591,7 @@ coralcounts<-c(verATGCcount,verGCATcount, verATTAcount, verACTGcount, verGCCGcou
 humanesophaguscounts<-c(1200,700,3300,900,1500,450)
 humangermcounts<-c(192, 321, 41, 58, 63, 72)
 
-contingency<-data.frame("coralmuts"= coralcounts, "humanUV"=(3500*UVtypesDF$Proportion),"humanesophagus"=humanesophaguscounts, "humangerm"= humangermcounts)
+contingency<-data.frame("coralmuts"= coralcounts, "humangerm"= humangermcounts, "humanesophagus"=humanesophaguscounts,"humanUV"=(3500*UVtypesDF$Proportion) )
 
 c.humangerm<-data.frame("coralmuts"=coralcounts, "humangerm"=humangermcounts)
 
