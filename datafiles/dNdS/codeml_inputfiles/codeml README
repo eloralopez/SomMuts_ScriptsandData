@@ -1,0 +1,9 @@
+How to make codeml inputfiles
+
+1. In geneious, concatenate all REF sequences into a single sequence and all MUT sequences into a single sequence. Remove the 3 nucleotides that code for the stop codon at the end of each sequence. Copy the concatenated REF sequence and name the copy the outgroup.
+
+2. Create an alignment of the three sequences (concatenated REF, concatenated MUT, and outgroup). Export the alignment in PHYLIP format. Change the extension ".phy" to ".txt"
+
+3. Create a tree in Geneious of the three sequences. Export the tree in Newick format.
+
+4. Edit your .ctl file so that it lists the correct filenames for you sequence (alignment) and tree files.
