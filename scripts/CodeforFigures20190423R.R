@@ -37,6 +37,11 @@ lapply(files,function(x) {
 	####VERIFIED####
 	verifiedlist<-metadatadf[ which(metadatadf$VerifiedYesorNo 			=="yes"),] #outputs all verified mutations
 	
+		DeNovos<-subset(verifiedlist, GoH_or_LoH=="DeNovo")
+	LoH<-subset(verifiedlist, GoH_or_LoH =="LoH")# && refdepth =="0" | uniqueverifiedlist$altdepth=="0") )
+	trueLoH<-subset(LoH, refdepth =="0" | altdepth=="0")
+	verifiedlist<-rbind( DeNovos, trueLoH)
+	
 	uniqueverifiedlist<-												verifiedlist[match(unique(verifiedlist$chrom.pos), 					verifiedlist$chrom.pos),] #outputs just the first sample with a verified mutation at each site
 	
 	uniqueverifiedcount<-nrow(uniqueverifiedlist) # number of unique verified mutations
@@ -86,7 +91,7 @@ lapply(files,function(x) {
 	verDeNovoprop<-verDeNovocount/uniqueverifiedcount
 	
 	verLoHlist<-uniqueverifiedlist[ which(uniqueverifiedlist$GoH_or_LoH =="LoH"),] # outputs all LoH mutations from the uniquified list of mutations
-
+	verLoHlist<-uniqueverifiedlist[ which(uniqueverifiedlist$refdepth =="0" | uniqueverifiedlist$altdepth=="0"),]
 	verLoHcount<-nrow(verLoHlist) # number of all unique LoH mutations
 	
 	verLoHprop<-verLoHcount/uniqueverifiedcount
@@ -488,6 +493,12 @@ genoanddepth<-(metadata$genotype)
 	
 	####VERIFIED####
 	verifiedlist<-metadatadf[ which(metadatadf$VerifiedYesorNo 			=="yes"),]
+	
+	DeNovos<-subset(verifiedlist, GoH_or_LoH=="DeNovo")
+	LoH<-subset(verifiedlist, GoH_or_LoH =="LoH")# && refdepth =="0" | uniqueverifiedlist$altdepth=="0") )
+	trueLoH<-subset(LoH, refdepth =="0" | altdepth=="0")
+	verifiedlist<-rbind( DeNovos, trueLoH)
+	
 	verifiedpopulationpolys<-											verifiedlist[ which(verifiedlist$PopulationPoly=="TRUE"),]
 	uniqueverifiedlist<-												verifiedlist[match(unique(verifiedlist$chrom.pos), 					verifiedlist$chrom.pos),]
 	uniqueverifiedpopulationpolys<-									uniqueverifiedlist[ which(uniqueverifiedlist$PopulationPoly=="TRUE"),]
@@ -518,6 +529,7 @@ genoanddepth<-(metadata$genotype)
 	verDeNovocount<-nrow(verDeNovolist)
 	verDeNovoprop<-verDeNovocount/uniqueverifiedcount
 	verLoHlist<-uniqueverifiedlist[ which(uniqueverifiedlist$GoH_or_LoH =="LoH"),]
+	verLoHlist<-uniqueverifiedlist[ which(uniqueverifiedlist$refdepth =="0" | uniqueverifiedlist$altdepth=="0"),]
 	verLoHcount<-nrow(verLoHlist)
 		verLoHprop<-verLoHcount/uniqueverifiedcount
 
@@ -525,8 +537,17 @@ genoanddepth<-(metadata$genotype)
 	averageverdepth<-mean(verifieddepth) #this gives the mean value of average depth at each site, not just the mutant depth at each site
 	SEaverageverdepth<-se(verifieddepth) #finds standard deviation of verifieddepths
 
+##LOH: to REF or to ALT? ##
+
+toREF<-verLoHlist[which(verLoHlist$altdepth=="0"),]
+ toREFcount<-nrow(toREF)	
+ 
+
+toALT<-verLoHlist[which(verLoHlist$refdepth=="0"),]
+toALTcount<-nrow(toALT)
+ 
 ###MUTATION SPECTRA###
-verATGClist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="AtoG" | uniqueverifiedlist$WhattoWhat=="TtoC"),]
+	verATGClist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="AtoG" | uniqueverifiedlist$WhattoWhat=="TtoC"),]
 	verATGCcount<-nrow(verATGClist)
 	verATGCprop<-verATGCcount/uniqueverifiedcount
 	SEverATGCprop<-se(verATGCprop)
@@ -551,6 +572,72 @@ verATGClist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="AtoG" | u
 	verGCTAcount<-nrow(verGCTAlist)
 	verGCTAprop<-verGCTAcount/uniqueverifiedcount
 	vertypesDF<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"), coralProportion=c(verATGCprop, 	verGCATprop, verATTAprop,verACTGprop, verGCCGprop, verGCTAprop))
+
+###MUTATION SPECTRA for LOH ###
+	verLoHATGClist<-verLoHlist[ which(verLoHlist$WhattoWhat=="AtoG" | verLoHlist$WhattoWhat=="TtoC"),]
+	verLoHATGCcount<-nrow(verLoHATGClist)
+	verLoHATGCprop<-verLoHATGCcount/verLoHcount
+	SEverLoHATGCprop<-se(verLoHATGCprop)
+	
+	verLoHGCATlist<-verLoHlist[ which(verLoHlist$WhattoWhat=="GtoA" | verLoHlist$WhattoWhat=="CtoT"),]
+	verLoHGCATcount<-nrow(verLoHGCATlist)
+	verLoHGCATprop<-verLoHGCATcount/verLoHcount
+
+	verLoHATTAlist<-verLoHlist[ which(verLoHlist$WhattoWhat=="AtoT" | verLoHlist$WhattoWhat=="TtoA"),]
+	verLoHATTAcount<-nrow(verLoHATTAlist)
+	verLoHATTAprop<-verLoHATTAcount/verLoHcount
+
+	verLoHACTGlist<-verLoHlist[ which(verLoHlist$WhattoWhat=="AtoC" | verLoHlist$WhattoWhat=="TtoG"),]
+	verLoHACTGcount<-nrow(verLoHACTGlist)
+	verLoHACTGprop<-verLoHACTGcount/verLoHcount
+
+	verLoHGCCGlist<-verLoHlist[ which(verLoHlist$WhattoWhat=="CtoG" | verLoHlist$WhattoWhat=="GtoC"),]
+	verLoHGCCGcount<-nrow(verLoHGCCGlist)
+	verLoHGCCGprop<-verLoHGCCGcount/verLoHcount
+
+	verLoHGCTAlist<-verLoHlist[ which(verLoHlist$WhattoWhat=="GtoT" | verLoHlist$WhattoWhat=="CtoA"),]
+	verLoHGCTAcount<-nrow(verLoHGCTAlist)
+	verLoHGCTAprop<-verLoHGCTAcount/verLoHcount
+	vertypesLoHDF<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"), LoHcoralProportion=c(verLoHATGCprop, 	verLoHGCATprop, verLoHATTAprop,verLoHACTGprop, verLoHGCCGprop, verLoHGCTAprop))
+
+###MUTATION SPECTRA for DeNovo ###
+	verDeNovoATGClist<-verDeNovolist[ which(verDeNovolist$WhattoWhat=="AtoG" | verDeNovolist$WhattoWhat=="TtoC"),]
+	verDeNovoATGCcount<-nrow(verDeNovoATGClist)
+	verDeNovoATGCprop<-verDeNovoATGCcount/verDeNovocount
+	SEverDeNovoATGCprop<-se(verDeNovoATGCprop)
+	
+	verDeNovoGCATlist<-verDeNovolist[ which(verDeNovolist$WhattoWhat=="GtoA" | verDeNovolist$WhattoWhat=="CtoT"),]
+	verDeNovoGCATcount<-nrow(verDeNovoGCATlist)
+	verDeNovoGCATprop<-verDeNovoGCATcount/verDeNovocount
+
+	verDeNovoATTAlist<-verDeNovolist[ which(verDeNovolist$WhattoWhat=="AtoT" | verDeNovolist$WhattoWhat=="TtoA"),]
+	verDeNovoATTAcount<-nrow(verDeNovoATTAlist)
+	verDeNovoATTAprop<-verDeNovoATTAcount/verDeNovocount
+
+	verDeNovoACTGlist<-verDeNovolist[ which(verDeNovolist$WhattoWhat=="AtoC" | verDeNovolist$WhattoWhat=="TtoG"),]
+	verDeNovoACTGcount<-nrow(verDeNovoACTGlist)
+	verDeNovoACTGprop<-verDeNovoACTGcount/verDeNovocount
+
+	verDeNovoGCCGlist<-verDeNovolist[ which(verDeNovolist$WhattoWhat=="CtoG" | verDeNovolist$WhattoWhat=="GtoC"),]
+	verDeNovoGCCGcount<-nrow(verDeNovoGCCGlist)
+	verDeNovoGCCGprop<-verDeNovoGCCGcount/verDeNovocount
+
+	verDeNovoGCTAlist<-verDeNovolist[ which(verDeNovolist$WhattoWhat=="GtoT" | verDeNovolist$WhattoWhat=="CtoA"),]
+	verDeNovoGCTAcount<-nrow(verDeNovoGCTAlist)
+	verDeNovoGCTAprop<-verDeNovoGCTAcount/verDeNovocount
+	vertypesDeNovoDF<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"), DeNovocoralProportion=c(verDeNovoATGCprop, 	verDeNovoGCATprop, verDeNovoATTAprop,verDeNovoACTGprop, verDeNovoGCCGprop, verDeNovoGCTAprop))
+	
+#"A>G,T>C","G>A,C>T","A>T,T>A","A>C,T>G","G>C,C>G","G>T,C>A"
+
+par(mfrow=c(1,3))	
+
+	#LoH spectrum:
+
+	vertypesLoHDFplot<-barplot(vertypesLoHDF$LoHcoralProportion,names.arg=vertypesLoHDF$Types, ylim=c(0,0.7), main="Mutation spectrum for just LoH across 4 colonies", las=2)
+	
+	#GOH spectrum:
+	vertypesDeNovoDFplot<-barplot(vertypesDeNovoDF$DeNovocoralProportion,names.arg=vertypesDeNovoDF$Types, ylim=c(0,0.7), main="Mutation spectrum for just DeNovo across 4 colonies", las=2)
+
 	
 #"A>G,T>C","G>A,C>T","A>T,T>A","A>C,T>G","G>C,C>G","G>T,C>A"
 #FIGURE 4:
@@ -584,10 +671,25 @@ UVtypesDFplot<-barplot(UVtypesDF$Proportion, names.arg=UVtypesDF$Types, ylim=c(0
 Transtions<- verATGCprop + verGCATprop
 Transversions<- verATTAprop+verACTGprop+verGCCGprop+verGCTAprop
 TiTv<- Transtions/Transversions
+#for LoH
+TranstionsLoH<- verLoHATGCprop + verLoHGCATprop
+TransversionsLoH<- verLoHATTAprop+verLoHACTGprop+verLoHGCCGprop+verLoHGCTAprop
+TiTvLoH<- TranstionsLoH/TransversionsLoH
+
+#for DeNovo
+TranstionsDeNovo<- verDeNovoATGCprop + verDeNovoGCATprop
+TransversionsDeNovo<- verDeNovoATTAprop+verDeNovoACTGprop+verDeNovoGCCGprop+verDeNovoGCTAprop
+TiTvDeNovo<- TranstionsDeNovo/TransversionsDeNovo
 
 ##make a contingency table for chi-square test##
 types<-c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A")
 coralcounts<-c(verATGCcount,verGCATcount, verATTAcount, verACTGcount, verGCCGcount, verGCTAcount)
+
+coralcountsLoH<-c(verLoHATGCcount,verLoHGCATcount, verLoHATTAcount, verLoHACTGcount, verLoHGCCGcount, verLoHGCTAcount)
+
+coralcountsDeNovo<-c(verDeNovoATGCcount,verDeNovoGCATcount, verDeNovoATTAcount, verDeNovoACTGcount, verDeNovoGCCGcount, verDeNovoGCTAcount)
+
+
 humanesophaguscounts<-c(1200,700,3300,900,1500,450)
 humangermcounts<-c(192, 321, 41, 58, 63, 72)
 
@@ -599,12 +701,25 @@ c.humaneso<-data.frame("coralmuts"= coralcounts, "humaneso"=humanesophaguscounts
 	
 c.humanUV<-data.frame("coralmuts"= coralcounts, "humanUV"=(3500*UVtypesDF$Proportion))
 
+c.LoH<-data.frame("coralmuts"=coralcounts, "LoH"=coralcountsLoH)
+
+c.DeNovo<-data.frame("coralmuts"=coralcounts, "DeNovo"=coralcountsDeNovo)
+
+LoH.DeNovo<-data.frame("LoH"=coralcountsLoH, "DeNovo"=coralcountsDeNovo)
+
+c.LoH.DeNovo<-data.frame("coralmuts"=coralcounts, "LoH"=coralcountsLoH, "DeNovo"=coralcountsDeNovo)
+
 #info about contingency tables here: http://www.sthda.com/english/wiki/chi-square-test-of-independence-in-r#data-format-contingency-tables
 
 chi<- chisq.test(contingency)
 chi2<- chisq.test(c.humangerm)
 chi3<- chisq.test(c.humaneso)
 chi4<-chisq.test(c.humanUV)
+chi5<-chisq.test(c.LoH)
+chi6<-chisq.test(c.DeNovo)
+chi7<-chisq.test(LoH.DeNovo)
+chi8<-chisq.test(c.LoH.DeNovo)
+
 chi$observed
 chi$expected
 chi$residuals

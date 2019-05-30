@@ -7,3 +7,5 @@ How to make codeml inputfiles
 3. Create a tree in Geneious of the three sequences. Export the tree in Newick format.
 
 4. Edit your .ctl file so that it lists the correct filenames for you sequence (alignment) and tree files.
+
+5. To run codeml: /Users/eloralopez/Documents/PAML/paml4.8/bin/codeml file.ctl

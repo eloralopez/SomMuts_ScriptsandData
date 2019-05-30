@@ -14,7 +14,7 @@
                     * models for codons:
                         * 0:one, 1:b, 2:2 or more dN/dS ratios for branches
 
-      NSsites = 0   * dN/dS among sites. 0:no variation, 1:neutral, 2:positive
+      NSsites = 0 1   * dN/dS among sites. 0:no variation, 1:neutral, 2:positive
         icode = 0   * 0:standard genetic code; 1:mammalian mt; 2-10:see below
 
     fix_kappa = 0   * 1: kappa fixed, 0: kappa to be estimated
