@@ -11,11 +11,12 @@ sessionInfo()
 
 files<-list.files(path="~/Documents/SomaticMutations/OfuAug/WithVerifications/WithDepths", pattern="*FOR_R.txt", full.names=T, recursive=FALSE)
 
-par(mfrow=c(2,4)) #if your output includes plots, this will put all of the plots in one image. change the (4,5) to different numbers depending on how large you want your grid of plots to be.
+par(mfrow=c(4,5)) #if your output includes plots, this will put all of the plots in one image. change the (4,5) to different numbers depending on how large you want your grid of plots to be.
 
 #then, start your loop:
 lapply(files,function(x) {
 	metadata<-read.delim(x) #load a file
+
 	base<-basename(x)
 	colony<-strsplit(base, "\\_")[[1]][2] #the colony name 
 	
@@ -34,6 +35,15 @@ lapply(files,function(x) {
 
 	metadatadf<-merge(metadatadf, DepthMeansdf[, c("chrom.pos", 	"totaldepth")], by="chrom.pos") #adds the mean depth per site to the last column of the metadatadf table, under column name "totaldepth.y"
 	
+	DeNovos<-subset(metadatadf, GoH_or_LoH=="DeNovo") #pulls out just the DeNovo (GOH) mutations
+	
+	LoH<-subset(metadatadf, GoH_or_LoH =="LoH") #pulls out just the mutations labeled LOH
+		
+	trueLoH<-subset(LoH, refdepth =="0" | altdepth=="0") #pulls out just the "true" LOH mutations- that is, removes all sites labeled LOH where either the minor allele is in fact present but at less than 10% frequency
+	
+	metadatadf<-rbind( DeNovos, trueLoH)
+	uniquemetadatadf<-											metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),] #outputs just the first sample with a verified mutation at each site
+
 	####VERIFIED####
 	verifiedlist<-metadatadf[ which(metadatadf$VerifiedYesorNo 			=="yes"),] #outputs all verified mutations
 	
@@ -81,7 +91,7 @@ lapply(files,function(x) {
 	colnames(mat)<-c("PopPoly", "NonPopPoly")
 	rownames(mat)<-c("% GOH","% LOH")
 	mat<-as.table(mat)
-	#barplot(mat, main=colony, ylim=c(0,100)) # here is your stacked barplot with poppolys, nonpoppolys, and LoH/GoH - Figure 4
+	barplot(mat, main=colony, ylim=c(0,100)) # here is your stacked barplot with poppolys, nonpoppolys, and LoH/GoH - Figure 4
 
 
 ###GOH VS LOH for each colony - FIGURE 2 c,d,e,f ###
@@ -485,7 +495,13 @@ genoanddepth<-(metadata$genotype)
 
 	metadatadf<-merge(metadatadf, DepthMeansdf[, c("chrom.pos", 	"totaldepth")], by="chrom.pos")
 	
-	uniquemetadatadf<-metadatadf[match(unique(metadatadf$chrom.pos), metadatadf$chrom.pos),]
+	
+	DeNovos<-subset(metadatadf, GoH_or_LoH=="DeNovo")
+	LoH<-subset(metadatadf, GoH_or_LoH =="LoH")# && refdepth =="0" | uniqueverifiedlist$altdepth=="0") )
+	trueLoH<-subset(LoH, refdepth =="0" | altdepth=="0")
+	metadatadf<-rbind( DeNovos, trueLoH)
+	uniquemetadatadf<-											metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),] #outputs just the first sample with a verified mutation at each site
+	
 	poppolys<-uniquemetadatadf[ which(uniquemetadatadf$PopulationPoly 			=="TRUE"),]
 	poppolyscount<-nrow(poppolys)
 	nonpoppolys<-uniquemetadatadf[ which(uniquemetadatadf$PopulationPoly 			=="FALSE"),]
