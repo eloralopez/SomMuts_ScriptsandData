@@ -110,9 +110,9 @@ lapply(files,function(x) {
 	verLoHprop<-verLoHcount/uniqueverifiedcount
 	cols<-c("blue","red")
 	verifiedDeNovoLoHDF<-data.frame(Types=c("GoH","LoH"),Proportions=c(verDeNovoprop*100,verLoHprop*100))
-	verifiedDeNovoLoHplot<-barplot(verifiedDeNovoLoHDF$Proportion,names.arg=verifiedDeNovoLoHDF$Types, ylim=c(0,100), main=colony,las=1, col=cols, cex.axis=1.5, cex.lab=1.5, cex.sub=2, cex.names = 2, cex.main=2) #Figure 2 c,d,e,f
+#	verifiedDeNovoLoHplot<-barplot(verifiedDeNovoLoHDF$Proportion,names.arg=verifiedDeNovoLoHDF$Types, ylim=c(0,100), main=colony,las=1, col=cols, cex.axis=1.5, cex.lab=1.5, cex.sub=2, cex.names = 2, cex.main=2) #Figure 2 c,d,e,f
 	#verifiedDeNovoLoHDF$Proportion
-})
+
 	### COMPARING DEPTHS (FIGURE S1a-d) ###
 	verifieddepth<-(uniqueverifiedlist$totaldepth.y)
 	
@@ -131,15 +131,15 @@ lapply(files,function(x) {
 	
 	#test for signficance in difference between means:
 	#allVSver<-t.test(allsites$totaldepth.y,verifieddepth)
-	wilcox.test(allsites$totaldepth.y,verifieddepth) #use wilcoxon instead of t test
+#	wilcox.test(allsites$totaldepth.y,verifieddepth) #use wilcoxon instead of t test
 	#falseVSver<-t.test(falsifieddepth,verifieddepth)
-	wilcox.test(falsifieddepth,verifieddepth) #use wilcoxon instead of t test
+	#wilcox.test(falsifieddepth,verifieddepth) #use wilcoxon instead of t test
 
-#	p<- ggplot(df, aes(groups,x))
+	p<- ggplot(df, aes(groups,x))
 #	p + geom_violin(aes(fill = groups))
-#	depthsplots<- p +geom_boxplot() + ggtitle(colony) + geom_sina(aes(color=groups),size=1 ) + ylim(0,85) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Read Depth") # here is your depths plot, FIGURE S1
+	depthsplots<- p +geom_boxplot() + ggtitle(colony) + geom_sina(aes(color=groups),size=1 ) + ylim(0,85) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Read Depth") # here is your depths plot, FIGURE S1
 
-	
+})	
 
 
 	verifieddepth<-(uniqueverifiedlist$totaldepth.y)
@@ -227,7 +227,7 @@ lapply(files,function(x) {
 	vertypesDFplot<-barplot(vertypesDF$coralProportion,names.arg=vertypesDF$Types, ylim=c(0,0.7), main=colony, las=2) #Figure 4a
 	
 
-})	
+
 
 ##Figure 2b ##
 props<-read.delim("~/Documents/SomaticMutations/OfuAug/ColonyDeNovoLoHprops.txt")
@@ -633,9 +633,11 @@ toALTcount<-nrow(toALT)
 #	falseVSver<-t.test(falsifieddepth,verifieddepth)
   wilcox.test(falsifieddepth,verifieddepth)
 	p<- ggplot(df, aes(groups,x))
+
 	#p + geom_violin(aes(fill = groups))
 	depthsplotscombined<- p +geom_boxplot() + geom_sina(aes(color=groups),size=1 ) + ylim(0,85) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Read Depth") # here is your depths plot, FIGURE S1
   depthsplotscombined
+  
 ###MUTATION SPECTRA###
 	verATGClist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="AtoG" | uniqueverifiedlist$WhattoWhat=="TtoC"),]
 	verATGCcount<-nrow(verATGClist)
@@ -732,27 +734,23 @@ par(mfrow=c(1,3))
 #"A>G,T>C","G>A,C>T","A>T,T>A","A>C,T>G","G>C,C>G","G>T,C>A"
 #FIGURE 4:
 par(mfrow=c(1,4))
-	vertypesDFplot<-barplot(vertypesDF$coralProportion,names.arg=vertypesDF$Types, ylim=c(0,0.7), main="Verified coral somatic mutations", las=2) #Figure 4a
-	
-#humantypesDF<-data.frame(Types=c("ATtoGC","GCtoAT","ATtoTA","ATtoCG","GCtoCG","GCtoTA"), Proportion=c(.221, .408, .067, .078, .125, .110))
-#humantypesDFplot<-barplot(humantypesDF$Proportion, names.arg=humantypesDF$Types, ylim=c(0,0.7), main="Human Germline Spectrum",las=2)# find the citation
+op <- par(mar = c(10,4,4,2) + 0.1)
+	vertypesDFplot<-barplot(vertypesDF$coralProportion,names.arg=vertypesDF$Types, ylim=c(0,0.7), main="Coral somatic mutations", ylab="Proportion of mutations", las=2, cex.names=1.5, cex.axis=1.5,cex.lab=1.5, cex.main=1.5) #Figure 4a
 
-#humantypesDF<-data.frame(Types=c("ATtoGC","GCtoAT","ATtoTA","ATtoCG","GCtoCG","GCtoTA"), Proportion=c(.02, .57, .02, .24, .08, .08))
-#humantypesDFplot<-barplot(humantypesDF$Proportion, names.arg=humantypesDF$Types, ylim=c(0,0.7), main="Human Germline Spectrum",las=2)# Greenman et al 2007
 
 humantypesDF<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"), Proportion=c(.27, .24, .07, .06, .09, .09))
-humantypesDFplot<-barplot(humantypesDF$Proportion, names.arg=humantypesDF$Types, ylim=c(0,0.7), main="Human Germline Spectrum- Rahbari",las=2)# Rahbari et al 2016 NATURE GENETICS	
+humantypesDFplot<-barplot(humantypesDF$Proportion, names.arg=humantypesDF$Types, ylim=c(0,0.7), main="Human Germline Spectrum",las=2, cex.names=1.5, cex.axis=1.5,cex.lab=1.5, cex.main=1.5)# Rahbari et al 2016 NATURE GENETICS	
 #Figure 4b
 
 humanesophagus<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"), Proportion=c(.19, .42, .09, .06, .07, .16))
-humanesophagusplot<-barplot(humanesophagus$Proportion, names.arg=humanesophagus$Types, ylim=c(0,0.7), main="Human Esophagus Spectrum",las=2)# Martincorena et al 2018 Science
+humanesophagusplot<-barplot(humanesophagus$Proportion, names.arg=humanesophagus$Types, ylim=c(0,0.7), main="Human Esophagus Spectrum",las=2, cex.names=1.5, cex.axis=1.5,cex.lab=1.5, cex.main=1.5)# Martincorena et al 2018 Science
 #Figure 4c
 
 #y<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"),Proportion=c(.324,.378, .081, .054, .081, .081))
 #barplot(y$Proportion, names.arg=y$Types,col="gray", las=1,ylim=c(0,0.7), main="Distribution of SNP types for A. palmata", las=2)
 
 UVtypesDF<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"), Proportion=c(2500/35850, 24000/35850, 2400/35850, 2450/35850, 500/35850, 4000/35850))
-UVtypesDFplot<-barplot(UVtypesDF$Proportion, names.arg=UVtypesDF$Types, ylim=c(0, 0.7), main="High UV Spectrum",las=2) #Pleasance et al. 2009
+UVtypesDFplot<-barplot(UVtypesDF$Proportion, names.arg=UVtypesDF$Types, ylim=c(0, 0.7), main="High UV Spectrum",las=2, cex.names=1.5, cex.axis=1.5,cex.lab=1.5, cex.main=1.5) #Pleasance et al. 2009
 #Figure 4d
 #y<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"),Proportion=c(.66,.21, .1, .009, .014, .009))
 #barplot(y$Proportion, names.arg=y$Types,col="gray",ylim=c(0,0.7), main="Distribution of error types for Taq DNA Polymerase",las=2)	 #Potapov and Ong
