@@ -11,7 +11,7 @@ sessionInfo()
 
 files<-list.files(path="~/Documents/SomaticMutations/OfuAug/WithVerifications/WithDepths", pattern="*FOR_R.txt", full.names=T, recursive=FALSE)
 
-par(mfrow=c(1,4)) #if your output includes plots, this will put all of the plots in one image. change the (4,5) to different numbers depending on how large you want your grid of plots to be.
+par(mfrow=c(1,5)) #if your output includes plots, this will put all of the plots in one image. change the (4,5) to different numbers depending on how large you want your grid of plots to be.
 
 #then, start your loop:
 lapply(files,function(x) {
@@ -108,11 +108,11 @@ lapply(files,function(x) {
 	verLoHcount<-nrow(verLoHlist) # number of all unique LoH mutations
 
 	verLoHprop<-verLoHcount/uniqueverifiedcount
-	
+	cols<-c("blue","red")
 	verifiedDeNovoLoHDF<-data.frame(Types=c("GoH","LoH"),Proportions=c(verDeNovoprop*100,verLoHprop*100))
-	#verifiedDeNovoLoHplot<-barplot(verifiedDeNovoLoHDF$Proportion,names.arg=verifiedDeNovoLoHDF$Types, ylim=c(0,100), main=colony, ylab="Percent of Verified Mutations") #Figure 3 b, c, d, e
+	verifiedDeNovoLoHplot<-barplot(verifiedDeNovoLoHDF$Proportion,names.arg=verifiedDeNovoLoHDF$Types, ylim=c(0,100), main=colony,las=1, col=cols, cex.axis=1.5, cex.lab=1.5, cex.sub=2, cex.names = 2, cex.main=2) #Figure 2 c,d,e,f
 	#verifiedDeNovoLoHDF$Proportion
-
+})
 	### COMPARING DEPTHS (FIGURE S1a-d) ###
 	verifieddepth<-(uniqueverifiedlist$totaldepth.y)
 	
@@ -134,7 +134,7 @@ lapply(files,function(x) {
 	wilcox.test(allsites$totaldepth.y,verifieddepth) #use wilcoxon instead of t test
 	#falseVSver<-t.test(falsifieddepth,verifieddepth)
 	wilcox.test(falsifieddepth,verifieddepth) #use wilcoxon instead of t test
-})
+
 #	p<- ggplot(df, aes(groups,x))
 #	p + geom_violin(aes(fill = groups))
 #	depthsplots<- p +geom_boxplot() + ggtitle(colony) + geom_sina(aes(color=groups),size=1 ) + ylim(0,85) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Read Depth") # here is your depths plot, FIGURE S1
@@ -238,14 +238,17 @@ se2<-se(frame[,3])
 standarderrors<-c(se1,se2)
 mean1<-(mean(frame[,2]))
 mean2<-(mean(frame[,3]))
-names<-c("DeNovo","LoH")
+names<-c("GoH","LoH")
 means<-c(mean1, mean2)
+cols<-c("blue","red")
 plotTop <- max(means+standarderrors*2)
-barCenters <- barplot(means, names.arg=names, col="gray", las=1, ylim=c(0,100), ylab="Percent of Verified Mutations")
+barCenters <- barplot(means, names.arg=names, las=1, col=cols, ylim=c(0,100), main="All colonies", ylab="Percent of Verified Mutations", cex.axis=1.5, cex.lab=1.5, cex.sub=2, cex.names = 2, cex.main=2)
 arrows(barCenters, means-standarderrors*2, barCenters, means+standarderrors*2, lwd=1, angle=90, code=3)
 wilcox.test(frame[,2],frame[,3])
 
 ##Figure 1 ##
+
+par(mfrow=c(1,1))	
 #first run this wrapper script:
 #I got this from https://github.com/mrxiaohe/R_Functions/blob/master/functions/bar
 bar <- function(dv, factors, dataframe, percentage=FALSE, errbar=!percentage, half.errbar=TRUE, conf.level=.95, 
@@ -507,6 +510,7 @@ bar(dv = Number,
 	dataframe = stats,
 	errbar =FALSE,
 	ylim = c(0, 240),
+	las = 1,
 	col=c("firebrick","black","gray","blue"),
 	ylab="# of SNPs")
 
@@ -865,10 +869,14 @@ f <- summary(linearMod)$fstatistic  # parameters for model p-value calc
 model_p <- pf(f[1], f[2], f[3], lower=FALSE)
 
 par(mfrow=c(1,1))
-plot(size,denovofreq, col="blue",ylim=c(min(denovofreq),max(freq)), pch=16, cex=2, ylab="Mutations per nucleotide per sample
-     ", xlab="Colony surface area (cm2)")
+op <- par(mar = c(5,7,4,2) + 0.1) #put more space on left hand margin of plot
+
+plot(size,denovofreq, col="blue",ylim=c(0,(max(freq)+(.1*max(freq)))), ylab="Mutations per nucleotide per sample", pch=16, cex=2, las=1, xlab=expression(paste("Colony surface area (",cm^2,")")))
+clip(0,14000,0,0.0000005) #bounds the the regression lines
 abline(lmdenovo, col="blue",lty="dashed")
 points(size,freq, pch=16, cex=2)
 abline(lmtotal,lty="dashed")
 points(size,lohfreq,col="red",pch=16, cex=2)
 abline(lmLoH, col="red",lty="dashed")
+
+
