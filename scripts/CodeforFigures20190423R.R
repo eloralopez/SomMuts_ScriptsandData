@@ -11,7 +11,7 @@ sessionInfo()
 
 files<-list.files(path="~/Documents/SomaticMutations/OfuAug/WithVerifications/WithDepths", pattern="*FOR_R.txt", full.names=T, recursive=FALSE)
 
-par(mfrow=c(4,5)) #if your output includes plots, this will put all of the plots in one image. change the (4,5) to different numbers depending on how large you want your grid of plots to be.
+par(mfrow=c(1,4)) #if your output includes plots, this will put all of the plots in one image. change the (4,5) to different numbers depending on how large you want your grid of plots to be.
 
 #then, start your loop:
 lapply(files,function(x) {
@@ -43,6 +43,8 @@ lapply(files,function(x) {
 	
 	metadatadf<-rbind( DeNovos, trueLoH)
 	uniquemetadatadf<-											metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),] #outputs just the first sample with a verified mutation at each site
+  trueLoHunique<-subset(uniquemetadatadf, GoH_or_LoH =="LoH")
+  DeNovosunique<-subset(uniquemetadatadf, GoH_or_LoH=="DeNovo")
 
 	####VERIFIED####
 	verifiedlist<-metadatadf[ which(metadatadf$VerifiedYesorNo 			=="yes"),] #outputs all verified mutations
@@ -91,10 +93,11 @@ lapply(files,function(x) {
 	colnames(mat)<-c("PopPoly", "NonPopPoly")
 	rownames(mat)<-c("% GOH","% LOH")
 	mat<-as.table(mat)
-	barplot(mat, main=colony, ylim=c(0,100)) # here is your stacked barplot with poppolys, nonpoppolys, and LoH/GoH - Figure 4
+	#barplot(mat, main=colony, ylim=c(0,100), ylab =("Percent of Verified Mutations") ) # here is your stacked barplot with poppolys, nonpoppolys, and LoH/GoH - Figure 4
 
 
 ###GOH VS LOH for each colony - FIGURE 2 c,d,e,f ###
+	
 	verDeNovolist<-uniqueverifiedlist[ which(uniqueverifiedlist$GoH_or_LoH =="DeNovo"),] # outputs all GoH mutations from the uniquified list of mutations
 	
 	verDeNovocount<-nrow(verDeNovolist) # number of all unique GoH mutations 
@@ -103,14 +106,14 @@ lapply(files,function(x) {
 	verLoHlist<-uniqueverifiedlist[ which(uniqueverifiedlist$GoH_or_LoH =="LoH"),] # outputs all LoH mutations from the uniquified list of mutations
 	verLoHlist<-uniqueverifiedlist[ which(uniqueverifiedlist$refdepth =="0" | uniqueverifiedlist$altdepth=="0"),]
 	verLoHcount<-nrow(verLoHlist) # number of all unique LoH mutations
-	
+
 	verLoHprop<-verLoHcount/uniqueverifiedcount
 	
 	verifiedDeNovoLoHDF<-data.frame(Types=c("GoH","LoH"),Proportions=c(verDeNovoprop*100,verLoHprop*100))
-	verifiedDeNovoLoHplot<-barplot(verifiedDeNovoLoHDF$Proportion,names.arg=verifiedDeNovoLoHDF$Types, ylim=c(0,100), main=colony) #Figure 3 b, c, d, e
-	verifiedDeNovoLoHDF$Proportion
+	#verifiedDeNovoLoHplot<-barplot(verifiedDeNovoLoHDF$Proportion,names.arg=verifiedDeNovoLoHDF$Types, ylim=c(0,100), main=colony, ylab="Percent of Verified Mutations") #Figure 3 b, c, d, e
+	#verifiedDeNovoLoHDF$Proportion
 
-	### COMPARING DEPTHS (FIGURE S1) ###
+	### COMPARING DEPTHS (FIGURE S1a-d) ###
 	verifieddepth<-(uniqueverifiedlist$totaldepth.y)
 	
 	falsifiedlist<-metadatadf[ which(metadatadf$VerifiedYesorNo =="no"),]
@@ -125,13 +128,19 @@ lapply(files,function(x) {
 
 	groups<-c(rep("Verified",nrow(uniqueverifiedlist)),rep("Falsified",nrow(uniquefalsifiedlist)),rep("AllSites",nrow(allsites)))
 	df<-data.frame(groups, x)
-
-	p<- ggplot(df, aes(groups,x))
-	p + geom_violin(aes(fill = groups))
-	depthsplots<- p +geom_boxplot() + geom_sina(aes(color=groups),size=1 ) + ylim(0,85) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Read Depth") # here is your depths plot, FIGURE S1
+	
+	#test for signficance in difference between means:
+	#allVSver<-t.test(allsites$totaldepth.y,verifieddepth)
+	wilcox.test(allsites$totaldepth.y,verifieddepth) #use wilcoxon instead of t test
+	#falseVSver<-t.test(falsifieddepth,verifieddepth)
+	wilcox.test(falsifieddepth,verifieddepth) #use wilcoxon instead of t test
+})
+#	p<- ggplot(df, aes(groups,x))
+#	p + geom_violin(aes(fill = groups))
+#	depthsplots<- p +geom_boxplot() + ggtitle(colony) + geom_sina(aes(color=groups),size=1 ) + ylim(0,85) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Read Depth") # here is your depths plot, FIGURE S1
 
 	
-})
+
 
 	verifieddepth<-(uniqueverifiedlist$totaldepth.y)
 	averageverdepth<-mean(verifieddepth) #this gives the mean value of average depth at each site, not just the mutant depth at each site
@@ -181,18 +190,46 @@ lapply(files,function(x) {
 
 	uniqueverifiednonpopLoHcount<-nrow(uniqueverifiednonpopLoH)
 
-
+###pop vs nonpop poly Figure S2###
 	mat<-matrix(c(uniqueverifiedpopulationpolysGoHcount*100/uniqueverifiedcount, uniqueverifiednonpopGoHcount*100/uniqueverifiedcount, uniqueverifiedpopulationpolysLoHcount*100/uniqueverifiedcount, uniqueverifiednonpopLoHcount*100/uniqueverifiedcount),ncol=2,byrow=TRUE)
 	colnames(mat)<-c("PopPoly", "NonPopPoly")
 	rownames(mat)<-c("% GOH","% LOH")
 	mat<-as.table(mat)
-	barplot(mat, main=colony, ylim=c(0,100)) # here is your stacked barplot with poppolys, nonpoppolys, and LoH/GoH - Figure S2
+	#barplot(mat, main=colony, ylim=c(0,100), legend.text = c("GoH","LoH")) # here is your stacked barplot with poppolys, nonpoppolys, and LoH/GoH - Figure S2
 	
+	###MUTATION SPECTRA###
+	verATGClist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="AtoG" | uniqueverifiedlist$WhattoWhat=="TtoC"),]
+	verATGCcount<-nrow(verATGClist)
+	verATGCprop<-verATGCcount/uniqueverifiedcount
+	SEverATGCprop<-se(verATGCprop)
+	
+	verGCATlist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="GtoA" | uniqueverifiedlist$WhattoWhat=="CtoT"),]
+	verGCATcount<-nrow(verGCATlist)
+	verGCATprop<-verGCATcount/uniqueverifiedcount
+	
+	verATTAlist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="AtoT" | uniqueverifiedlist$WhattoWhat=="TtoA"),]
+	verATTAcount<-nrow(verATTAlist)
+	verATTAprop<-verATTAcount/uniqueverifiedcount
+	
+	verACTGlist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="AtoC" | uniqueverifiedlist$WhattoWhat=="TtoG"),]
+	verACTGcount<-nrow(verACTGlist)
+	verACTGprop<-verACTGcount/uniqueverifiedcount
+	
+	verGCCGlist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="CtoG" | uniqueverifiedlist$WhattoWhat=="GtoC"),]
+	verGCCGcount<-nrow(verGCCGlist)
+	verGCCGprop<-verGCCGcount/uniqueverifiedcount
+	
+	verGCTAlist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="GtoT" | uniqueverifiedlist$WhattoWhat=="CtoA"),]
+	verGCTAcount<-nrow(verGCTAlist)
+	verGCTAprop<-verGCTAcount/uniqueverifiedcount
+	vertypesDF<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"), coralProportion=c(verATGCprop, 	verGCATprop, verATTAprop,verACTGprop, verGCCGprop, verGCTAprop))
+  ###FIGURE S3 - MUTATION SPECTRUM FOR EACH COLONY
+	vertypesDFplot<-barplot(vertypesDF$coralProportion,names.arg=vertypesDF$Types, ylim=c(0,0.7), main=colony, las=2) #Figure 4a
 	
 
 })	
 
-##Figure 2 b ##
+##Figure 2b ##
 props<-read.delim("~/Documents/SomaticMutations/OfuAug/ColonyDeNovoLoHprops.txt")
 frame<-data.frame(props)
 se<-function(x) sd(x)/sqrt(length(x))
@@ -204,8 +241,9 @@ mean2<-(mean(frame[,3]))
 names<-c("DeNovo","LoH")
 means<-c(mean1, mean2)
 plotTop <- max(means+standarderrors*2)
-barCenters <- barplot(means, names.arg=names, col="gray", las=1, ylim=c(0,100))
+barCenters <- barplot(means, names.arg=names, col="gray", las=1, ylim=c(0,100), ylab="Percent of Verified Mutations")
 arrows(barCenters, means-standarderrors*2, barCenters, means+standarderrors*2, lwd=1, angle=90, code=3)
+wilcox.test(frame[,2],frame[,3])
 
 ##Figure 1 ##
 #first run this wrapper script:
@@ -469,7 +507,8 @@ bar(dv = Number,
 	dataframe = stats,
 	errbar =FALSE,
 	ylim = c(0, 240),
-	col=c("firebrick","black","gray","blue"))
+	col=c("firebrick","black","gray","blue"),
+	ylab="# of SNPs")
 
 ### to run an anlysis on all the combined data:###
 files<-list.files(path="~/Documents/SomaticMutations/OfuAug/WithVerifications/WithDepths", pattern="*FOR_R.txt", full.names=T, recursive=FALSE)
@@ -548,11 +587,16 @@ genoanddepth<-(metadata$genotype)
 	verLoHlist<-uniqueverifiedlist[ which(uniqueverifiedlist$refdepth =="0" | uniqueverifiedlist$altdepth=="0"),]
 	verLoHcount<-nrow(verLoHlist)
 		verLoHprop<-verLoHcount/uniqueverifiedcount
-
+		verifiedDeNovoLoHDF<-data.frame(Types=c("GoH","LoH"),Proportions=c(verDeNovoprop*100,verLoHprop*100))
+		verifiedDeNovoLoHplot<-barplot(verifiedDeNovoLoHDF$Proportion,names.arg=verifiedDeNovoLoHDF$Types, ylim=c(0,100), main=colony) #Figure 3 b, c, d, e
+		
+		#verifiedDeNovoLoHDF$Proportion
+		
 	verifieddepth<-(uniqueverifiedlist$totaldepth.y)
 	averageverdepth<-mean(verifieddepth) #this gives the mean value of average depth at each site, not just the mutant depth at each site
 	SEaverageverdepth<-se(verifieddepth) #finds standard deviation of verifieddepths
-
+	
+	
 ##LOH: to REF or to ALT? ##
 
 toREF<-verLoHlist[which(verLoHlist$altdepth=="0"),]
@@ -561,7 +605,33 @@ toREF<-verLoHlist[which(verLoHlist$altdepth=="0"),]
 
 toALT<-verLoHlist[which(verLoHlist$refdepth=="0"),]
 toALTcount<-nrow(toALT)
- 
+
+
+	### COMPARING DEPTHS FOR COMBINED COLONY DATA (FIGURE S1E ###
+	verifieddepth<-(uniqueverifiedlist$totaldepth.y)
+	
+	falsifiedlist<-metadatadf[ which(metadatadf$VerifiedYesorNo =="no"),]
+	
+	uniquefalsifiedlist<-falsifiedlist[match(unique(falsifiedlist$chrom.pos), falsifiedlist$chrom.pos),]
+	
+	falsifieddepth<-(uniquefalsifiedlist$totaldepth.y)
+
+	allsites<-metadatadf[match(unique(metadatadf$chrom.pos), metadatadf$chrom.pos),]
+
+	x<-c(verifieddepth, falsifieddepth, allsites$totaldepth.y)
+
+	groups<-c(rep("Verified",nrow(uniqueverifiedlist)),rep("Falsified",nrow(uniquefalsifiedlist)),rep("AllSites",nrow(allsites)))
+	df<-data.frame(groups, x)
+	
+	#test for signficance in difference between means for COMBINED COLONY DATA:
+#	allVSver<-t.test(allsites$totaldepth.y,verifieddepth)
+	wilcox.test(allsites$totaldepth.y,verifieddepth)
+#	falseVSver<-t.test(falsifieddepth,verifieddepth)
+  wilcox.test(falsifieddepth,verifieddepth)
+	p<- ggplot(df, aes(groups,x))
+	#p + geom_violin(aes(fill = groups))
+	depthsplotscombined<- p +geom_boxplot() + geom_sina(aes(color=groups),size=1 ) + ylim(0,85) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Read Depth") # here is your depths plot, FIGURE S1
+  depthsplotscombined
 ###MUTATION SPECTRA###
 	verATGClist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="AtoG" | uniqueverifiedlist$WhattoWhat=="TtoC"),]
 	verATGCcount<-nrow(verATGClist)
@@ -649,16 +719,16 @@ par(mfrow=c(1,3))
 
 	#LoH spectrum:
 
-	vertypesLoHDFplot<-barplot(vertypesLoHDF$LoHcoralProportion,names.arg=vertypesLoHDF$Types, ylim=c(0,0.7), main="Mutation spectrum for just LoH across 4 colonies", las=2)
+	vertypesLoHDFplot<-barplot(vertypesLoHDF$LoHcoralProportion,names.arg=vertypesLoHDF$Types, ylim=c(0,0.7), main="Verified LoH coral somatic mutations", las=2)
 	
 	#GOH spectrum:
-	vertypesDeNovoDFplot<-barplot(vertypesDeNovoDF$DeNovocoralProportion,names.arg=vertypesDeNovoDF$Types, ylim=c(0,0.7), main="Mutation spectrum for just DeNovo across 4 colonies", las=2)
+	vertypesDeNovoDFplot<-barplot(vertypesDeNovoDF$DeNovocoralProportion,names.arg=vertypesDeNovoDF$Types, ylim=c(0,0.7), main="Verified GoH coral somatic mutations", las=2)
 
 	
 #"A>G,T>C","G>A,C>T","A>T,T>A","A>C,T>G","G>C,C>G","G>T,C>A"
 #FIGURE 4:
 par(mfrow=c(1,4))
-	vertypesDFplot<-barplot(vertypesDF$coralProportion,names.arg=vertypesDF$Types, ylim=c(0,0.7), main="Mutation spectrum across 4 colonies", las=2) #Figure 4a
+	vertypesDFplot<-barplot(vertypesDF$coralProportion,names.arg=vertypesDF$Types, ylim=c(0,0.7), main="Verified coral somatic mutations", las=2) #Figure 4a
 	
 #humantypesDF<-data.frame(Types=c("ATtoGC","GCtoAT","ATtoTA","ATtoCG","GCtoCG","GCtoTA"), Proportion=c(.221, .408, .067, .078, .125, .110))
 #humantypesDFplot<-barplot(humantypesDF$Proportion, names.arg=humantypesDF$Types, ylim=c(0,0.7), main="Human Germline Spectrum",las=2)# find the citation
