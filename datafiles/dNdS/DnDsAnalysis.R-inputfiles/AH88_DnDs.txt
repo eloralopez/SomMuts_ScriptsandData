@@ -1,8 +1,6 @@
 Site	Syn_or_NonSyn	Normal AA	Mutant AA	position of change	Normal SNP	Mutant SNP	In_ORF?	DeNovo_or_LoH	ORF_Length_inNucleotides	ORFdn	ORFds	Length*dn	Length*ds
-contig80643-163	NonSyn	Asn	Lys	3	C	A	yes	LoH	178	0.0071	0	1.2638	0
 contig188499-113	NonSyn	Val	Ile	1	G	A	yes	LoH	180	0.0068	0	1.224	0
 contig69367-386	NonSyn	Val	Leu	1	C	A	yes	LoH	231	0.0057	0	1.3167	0
-contig14749-282	NonSyn	Ile	Met		A	C	yes	LoH	723	0.0018	0	1.3014	0
 contig181086-130	NonSyn	Lys	Ile		A	T	no	DeNovo				0	0
 contig153908-94	NonSyn	Asn	His		T	G	yes	DeNovo	145	0.0087	0	1.2615	0
 contig154133-828	NonSyn	Trp	Stop		G	A	no	DeNovo				0	0
