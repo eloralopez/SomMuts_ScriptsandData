@@ -39,7 +39,7 @@ lapply(files,function(x) {
 	
 	LoH<-subset(metadatadf, GoH_or_LoH =="LoH") #pulls out just the mutations labeled LOH
 		
-	trueLoH<-subset(LoH, refdepth =="0" | altdepth=="0") #pulls out just the "true" LOH mutations- that is, removes all sites labeled LOH where either the minor allele is in fact present but at less than 10% frequency
+	trueLoH<-subset(LoH, refdepth =="0" | altdepth=="0") #pulls out just the "true" LOH mutations- that is, removes all sites labeled LOH where the minor allele is in fact present but at less than 10% frequency
 	
 	metadatadf<-rbind( DeNovos, trueLoH)
 	uniquemetadatadf<-											metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),] #outputs just the first sample with a verified mutation at each site
@@ -543,6 +543,10 @@ genoanddepth<-(metadata$genotype)
 	LoH<-subset(metadatadf, GoH_or_LoH =="LoH")# && refdepth =="0" | uniqueverifiedlist$altdepth=="0") )
 	trueLoH<-subset(LoH, refdepth =="0" | altdepth=="0")
 	metadatadf<-rbind( DeNovos, trueLoH)
+	
+	#for supplemental table S1 with all putative mutations for all colonies:
+	write.table(metadatadf, "~/Documents/GitHub/SomMuts/ScriptsandData/datafiles/Post-verification/AllColonyMetadata.txt", sep="\t", row.names=FALSE)
+	
 	uniquemetadatadf<-											metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),] #outputs just the first sample with a verified mutation at each site
 	
 	poppolys<-uniquemetadatadf[ which(uniquemetadatadf$PopulationPoly 			=="TRUE"),]
