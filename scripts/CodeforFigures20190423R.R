@@ -11,12 +11,12 @@ sessionInfo()
 
 files<-list.files(path="~/Documents/SomaticMutations/OfuAug/WithVerifications/WithDepths", pattern="*FOR_R.txt", full.names=T, recursive=FALSE)
 
-par(mfrow=c(1,5)) #if your output includes plots, this will put all of the plots in one image. change the (4,5) to different numbers depending on how large you want your grid of plots to be.
-
+#par(mfrow=c(1,5)) #if your output includes plots, this will put all of the plots in one image. change the (4,5) to different numbers depending on how large you want your grid of plots to be.
+par(mfrow=c(1,4))
 #then, start your loop:
 lapply(files,function(x) {
 	metadata<-read.delim(x) #load a file
-
+  print(nrow(metadata))
 	base<-basename(x)
 	colony<-strsplit(base, "\\_")[[1]][2] #the colony name 
 	
@@ -36,14 +36,20 @@ lapply(files,function(x) {
 	metadatadf<-merge(metadatadf, DepthMeansdf[, c("chrom.pos", 	"totaldepth")], by="chrom.pos") #adds the mean depth per site to the last column of the metadatadf table, under column name "totaldepth.y"
 	
 	DeNovos<-subset(metadatadf, GoH_or_LoH=="DeNovo") #pulls out just the DeNovo (GOH) mutations
-	
+
+
 	LoH<-subset(metadatadf, GoH_or_LoH =="LoH") #pulls out just the mutations labeled LOH
-		
+
 	trueLoH<-subset(LoH, refdepth =="0" | altdepth=="0") #pulls out just the "true" LOH mutations- that is, removes all sites labeled LOH where the minor allele is in fact present but at less than 10% frequency
-	
-	metadatadf<-rbind( DeNovos, trueLoH)
+
+	metadatadf2<-rbind( DeNovos, trueLoH)
+
+	allputatives<-metadatadf[(metadatadf$chrom.pos %in% metadatadf2$chrom.pos),]
+  write.table(allputatives, "~/Documents/MBESubmission/SupplementalTableS4.txt", sep="\t", row.names=FALSE, quote=FALSE)
+
 	uniquemetadatadf<-											metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),] #outputs just the first sample with a verified mutation at each site
-  trueLoHunique<-subset(uniquemetadatadf, GoH_or_LoH =="LoH")
+
+	trueLoHunique<-subset(uniquemetadatadf, GoH_or_LoH =="LoH")
   DeNovosunique<-subset(uniquemetadatadf, GoH_or_LoH=="DeNovo")
 
 	####VERIFIED####
@@ -109,10 +115,10 @@ lapply(files,function(x) {
 
 	verLoHprop<-verLoHcount/uniqueverifiedcount
 	cols<-c("blue","red")
-	verifiedDeNovoLoHDF<-data.frame(Types=c("GoH","LoH"),Proportions=c(verDeNovoprop*100,verLoHprop*100))
-#	verifiedDeNovoLoHplot<-barplot(verifiedDeNovoLoHDF$Proportion,names.arg=verifiedDeNovoLoHDF$Types, ylim=c(0,100), main=colony,las=1, col=cols, cex.axis=1.5, cex.lab=1.5, cex.sub=2, cex.names = 2, cex.main=2) #Figure 2 c,d,e,f
-	#verifiedDeNovoLoHDF$Proportion
-
+	verifiedDeNovoLoHDF<-data.frame(Types=c("GoH","LoH"),Proportions=c(verDeNovocount,verLoHcount))
+	verifiedDeNovoLoHplot<-barplot(verifiedDeNovoLoHDF$Proportion,names.arg=verifiedDeNovoLoHDF$Types, ylim=c(0,20), main=colony,las=1, col=cols, cex.axis=1.5, cex.lab=1.5, cex.sub=2, cex.names = 2, cex.main=2) #Figure 2 c,d,e,f
+	verifiedDeNovoLoHDF$Proportion
+})
 	### COMPARING DEPTHS (FIGURE S1a-d) ###
 	verifieddepth<-(uniqueverifiedlist$totaldepth.y)
 	
@@ -139,7 +145,7 @@ lapply(files,function(x) {
 #	p + geom_violin(aes(fill = groups))
 	depthsplots<- p +geom_boxplot() + ggtitle(colony) + geom_sina(aes(color=groups),size=1 ) + ylim(0,85) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Read Depth") # here is your depths plot, FIGURE S1
 
-})	
+	
 
 
 	verifieddepth<-(uniqueverifiedlist$totaldepth.y)
@@ -195,8 +201,8 @@ lapply(files,function(x) {
 	colnames(mat)<-c("PopPoly", "NonPopPoly")
 	rownames(mat)<-c("% GOH","% LOH")
 	mat<-as.table(mat)
-	#barplot(mat, main=colony, ylim=c(0,100), legend.text = c("GoH","LoH")) # here is your stacked barplot with poppolys, nonpoppolys, and LoH/GoH - Figure S2
-	
+	barplot(mat, main=colony, ylim=c(0,100), legend.text = c("GoH","LoH")) # here is your stacked barplot with poppolys, nonpoppolys, and LoH/GoH - Figure S2
+})	
 	###MUTATION SPECTRA###
 	verATGClist<-uniqueverifiedlist[ which(uniqueverifiedlist$WhattoWhat=="AtoG" | uniqueverifiedlist$WhattoWhat=="TtoC"),]
 	verATGCcount<-nrow(verATGClist)
@@ -247,8 +253,15 @@ arrows(barCenters, means-standarderrors*2, barCenters, means+standarderrors*2, l
 wilcox.test(frame[,2],frame[,3])
 
 ##Figure 1 ##
+#stacked bar plot:
 
+mat<-matrix(c(30,113,29,32, 22,59,16,18,3,30,6,12),ncol=4,byrow=TRUE)
+colnames(mat)<-c("AH06", "AH09","AH75","AH88")
+rownames(mat)<-c("Inconclusive","Falsified","Verified")
+mat<-as.table(mat)
 par(mfrow=c(1,1))	
+barplot(mat, ylab= "Number of Mutations", ylim=c(0,250), legend.text = c("Inconclusive","Falsified","Verified")) # here is your stacked barplot with poppolys, nonpoppolys, and LoH/GoH - Figure S2
+
 #first run this wrapper script:
 #I got this from https://github.com/mrxiaohe/R_Functions/blob/master/functions/bar
 bar <- function(dv, factors, dataframe, percentage=FALSE, errbar=!percentage, half.errbar=TRUE, conf.level=.95, 
@@ -515,14 +528,21 @@ bar(dv = Number,
 	ylab="# of SNPs")
 
 ### to run an anlysis on all the combined data:###
+
+	metadatadf<-merge(metadatadf, DepthMeansdf[, c("chrom.pos", 	"totaldepth")], by="chrom.pos")
+	
 files<-list.files(path="~/Documents/SomaticMutations/OfuAug/WithVerifications/WithDepths", pattern="*FOR_R.txt", full.names=T, recursive=FALSE)
 metadata= NULL
 for (i in 1:length(files)) {
 	file =files[i]
 	data<-read.delim(file)
+	data<-data.frame(data)
 	base<-basename(file)
 	colony<-strsplit(base, "\\_")[[1]][2]
-	metadata <- rbind(metadata, data.frame(data))
+	len<-nrow(data)
+	colonyrep<-rep(colony, len)
+	withcolony<-data.frame(data, colonyrep)
+	metadata <- rbind(metadata, withcolony)
 }
 
 genoanddepth<-(metadata$genotype)
@@ -531,21 +551,20 @@ genoanddepth<-(metadata$genotype)
 	totaldepth<-as.numeric(split[,2])
 	refdepth<-as.numeric(split[,3])
 	altdepth<-as.numeric(split[,4])
-	metadatadf<-data.frame("chrom.pos" = metadata$chrom.pos, 	"sample"= metadata$sample, "ref" = metadata$ref, "alt" = 	metadata$alt, "genotype"= genotypes, "totaldepth"=totaldepth, 	"refdepth"=refdepth, "altdepth"=altdepth, 	"GoH_or_LoH"=metadata$DeNovo_LoH, "Ti/Tv"=metadata$TiTv, 	"WhattoWhat" = metadata$WhattoWhat, "PopulationPoly"= 			metadata$PopulationPoly, 	"VerifiedYesorNo"=metadata$VerifiedYesorNo)
+	metadatadf.0<-data.frame("chrom.pos" = metadata$chrom.pos, 	"sample"= metadata$sample, "ref" = metadata$ref, "alt" = 	metadata$alt, "genotype"= genotypes, "totaldepth"=totaldepth, 	"refdepth"=refdepth, "altdepth"=altdepth, 	"GoH_or_LoH"=metadata$DeNovo_LoH, "Ti/Tv"=metadata$TiTv, 	"WhattoWhat" = metadata$WhattoWhat, "PopulationPoly"= 			metadata$PopulationPoly, 	"VerifiedYesorNo"=metadata$VerifiedYesorNo, "ColonyName"=metadata$colonyrep)
 
-	DepthMeansdf<-aggregate(totaldepth~chrom.pos, metadatadf, 			FUN=mean)
+	DepthMeansdf<-aggregate(totaldepth~chrom.pos, metadatadf.0, 			FUN=mean)
 
-
-	metadatadf<-merge(metadatadf, DepthMeansdf[, c("chrom.pos", 	"totaldepth")], by="chrom.pos")
-	
-	
-	DeNovos<-subset(metadatadf, GoH_or_LoH=="DeNovo")
-	LoH<-subset(metadatadf, GoH_or_LoH =="LoH")# && refdepth =="0" | uniqueverifiedlist$altdepth=="0") )
+	DeNovos<-subset(metadatadf.0, GoH_or_LoH=="DeNovo")
+	LoH<-subset(metadatadf.0, GoH_or_LoH =="LoH")# && refdepth =="0" | uniqueverifiedlist$altdepth=="0") )
 	trueLoH<-subset(LoH, refdepth =="0" | altdepth=="0")
 	metadatadf<-rbind( DeNovos, trueLoH)
 	
 	#for supplemental table S1 with all putative mutations for all colonies:
-	write.table(metadatadf, "~/Documents/GitHub/SomMuts/ScriptsandData/datafiles/Post-verification/AllColonyMetadata.txt", sep="\t", row.names=FALSE)
+	allputatives<-metadatadf.0[(metadatadf.0$chrom.pos %in% metadatadf$chrom.pos),]
+	sortedbycolonyname<-allputatives[order(allputatives$ColonyName, allputatives$chrom.pos, allputatives$sample),]
+	sortedbycolonyname<-as.data.frame(sortedbycolonyname)
+	write.table(sortedbycolonyname, "~/Documents/GitHub/SomMuts/ScriptsandData/datafiles/Post-verification/AllColonyMetadata.txt", sep="\t", row.names=FALSE, quote=FALSE)
 	
 	uniquemetadatadf<-											metadatadf[match(unique(metadatadf$chrom.pos), 					metadatadf$chrom.pos),] #outputs just the first sample with a verified mutation at each site
 	
@@ -873,12 +892,15 @@ model_p <- pf(f[1], f[2], f[3], lower=FALSE)
 par(mfrow=c(1,1))
 op <- par(mar = c(5,7,4,2) + 0.1) #put more space on left hand margin of plot
 
-plot(size,denovofreq, col="blue",ylim=c(0,(max(freq)+(.1*max(freq)))), ylab="Mutations per nucleotide per sample", pch=16, cex=2, las=1, xlab=expression(paste("Colony surface area (",cm^2,")")))
+plot(size,denovofreq, col="blue",ylim=c(0,(max(freq)+(.1*max(freq)))), ylab="", pch=16, cex=2, las=1, xlab=expression(paste("Colony surface area (",cm^2,")")))
 clip(0,14000,0,0.0000005) #bounds the the regression lines
 abline(lmdenovo, col="blue",lty="dashed")
-points(size,freq, pch=16, cex=2)
+points(size,freq, pch=17, cex=2)
 abline(lmtotal,lty="dashed")
-points(size,lohfreq,col="red",pch=16, cex=2)
+points(size,lohfreq,col="red",pch=15, cex=2)
 abline(lmLoH, col="red",lty="dashed")
-
+legend("topleft",
+       legend = c("All mutations","LoH","GoH"),
+       col=c("black", "red", "blue"),
+       pch=c(17,15,16))
 
