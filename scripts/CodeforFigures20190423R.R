@@ -12,7 +12,7 @@ sessionInfo()
 files<-list.files(path="~/Documents/SomaticMutations/OfuAug/WithVerifications/WithDepths", pattern="*FOR_R.txt", full.names=T, recursive=FALSE)
 
 #par(mfrow=c(1,5)) #if your output includes plots, this will put all of the plots in one image. change the (4,5) to different numbers depending on how large you want your grid of plots to be.
-par(mfrow=c(1,4))
+par(mfrow=c(1,5))
 #then, start your loop:
 lapply(files,function(x) {
 	metadata<-read.delim(x) #load a file
@@ -116,9 +116,9 @@ lapply(files,function(x) {
 	verLoHprop<-verLoHcount/uniqueverifiedcount
 	cols<-c("blue","red")
 	verifiedDeNovoLoHDF<-data.frame(Types=c("GoH","LoH"),Proportions=c(verDeNovocount,verLoHcount))
-	verifiedDeNovoLoHplot<-barplot(verifiedDeNovoLoHDF$Proportion,names.arg=verifiedDeNovoLoHDF$Types, ylim=c(0,20), main=colony,las=1, col=cols, cex.axis=1.5, cex.lab=1.5, cex.sub=2, cex.names = 2, cex.main=2) #Figure 2 c,d,e,f
+	verifiedDeNovoLoHplot<-barplot(verifiedDeNovoLoHDF$Proportion,names.arg=verifiedDeNovoLoHDF$Types, ylim=c(0,20), main=colony,las=1, col=cols, cex.axis=1.5, cex.lab=1.5, cex.sub=2, cex.names = 2, cex.main=2, ylab="Number of Mutations") #Figure 2 c,d,e,f
 	verifiedDeNovoLoHDF$Proportion
-})
+
 	### COMPARING DEPTHS (FIGURE S1a-d) ###
 	verifieddepth<-(uniqueverifiedlist$totaldepth.y)
 	
@@ -139,13 +139,13 @@ lapply(files,function(x) {
 	#allVSver<-t.test(allsites$totaldepth.y,verifieddepth)
 #	wilcox.test(allsites$totaldepth.y,verifieddepth) #use wilcoxon instead of t test
 	#falseVSver<-t.test(falsifieddepth,verifieddepth)
-	#wilcox.test(falsifieddepth,verifieddepth) #use wilcoxon instead of t test
+	wilcox.test(falsifieddepth,verifieddepth) #use wilcoxon instead of t test
 
 	p<- ggplot(df, aes(groups,x))
 #	p + geom_violin(aes(fill = groups))
 	depthsplots<- p +geom_boxplot() + ggtitle(colony) + geom_sina(aes(color=groups),size=1 ) + ylim(0,85) + theme_bw() + theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank()) + labs(x = "", y = "Read Depth") # here is your depths plot, FIGURE S1
 
-	
+})	
 
 
 	verifieddepth<-(uniqueverifiedlist$totaldepth.y)
@@ -237,6 +237,9 @@ lapply(files,function(x) {
 
 ##Figure 2b ##
 props<-read.delim("~/Documents/SomaticMutations/OfuAug/ColonyDeNovoLoHprops.txt")
+mat<-matrix(c(1,2,11,19,1,5,7,5),ncol=2,byrow=TRUE)
+rownames(mat)<-c("AH06", "AH09","AH75","AH88")
+colnames(mat)<-c("GoH","LoH")
 frame<-data.frame(props)
 se<-function(x) sd(x)/sqrt(length(x))
 se1<-se(frame[,2])
@@ -246,7 +249,7 @@ mean1<-(mean(frame[,2]))
 mean2<-(mean(frame[,3]))
 names<-c("GoH","LoH")
 means<-c(mean1, mean2)
-cols<-c("blue","red")
+cols<-c("white","gray")
 plotTop <- max(means+standarderrors*2)
 barCenters <- barplot(means, names.arg=names, las=1, col=cols, ylim=c(0,100), main="All colonies", ylab="Percent of Verified Mutations", cex.axis=1.5, cex.lab=1.5, cex.sub=2, cex.names = 2, cex.main=2)
 arrows(barCenters, means-standarderrors*2, barCenters, means+standarderrors*2, lwd=1, angle=90, code=3)
@@ -580,7 +583,8 @@ genoanddepth<-(metadata$genotype)
 	LoH<-subset(verifiedlist, GoH_or_LoH =="LoH")# && refdepth =="0" | uniqueverifiedlist$altdepth=="0") )
 	trueLoH<-subset(LoH, refdepth =="0" | altdepth=="0")
 	verifiedlist<-rbind( DeNovos, trueLoH)
-	
+	write.table(verifiedlist, "~/Documents/MBESubmission/verifiedlistallcolonies.txt", sep="\t", row.names=FALSE, quote=FALSE)
+	#write.table(verifiedlist, "~/Documents/MBESubmission/verifiedlist.txt",sep='\t',quote=FALSE)
 	verifiedpopulationpolys<-											verifiedlist[ which(verifiedlist$PopulationPoly=="TRUE"),]
 	uniqueverifiedlist<-												verifiedlist[match(unique(verifiedlist$chrom.pos), 					verifiedlist$chrom.pos),]
 	uniqueverifiedpopulationpolys<-									uniqueverifiedlist[ which(uniqueverifiedlist$PopulationPoly=="TRUE"),]
@@ -635,24 +639,24 @@ toALTcount<-nrow(toALT)
 
 
 	### COMPARING DEPTHS FOR COMBINED COLONY DATA (FIGURE S1E ###
-	verifieddepth<-(uniqueverifiedlist$totaldepth.y)
+	verifieddepth<-(uniqueverifiedlist$totaldepth)
 	
 	falsifiedlist<-metadatadf[ which(metadatadf$VerifiedYesorNo =="no"),]
 	
 	uniquefalsifiedlist<-falsifiedlist[match(unique(falsifiedlist$chrom.pos), falsifiedlist$chrom.pos),]
 	
-	falsifieddepth<-(uniquefalsifiedlist$totaldepth.y)
+	falsifieddepth<-(uniquefalsifiedlist$totaldepth)
 
 	allsites<-metadatadf[match(unique(metadatadf$chrom.pos), metadatadf$chrom.pos),]
 
-	x<-c(verifieddepth, falsifieddepth, allsites$totaldepth.y)
+	x<-c(verifieddepth, falsifieddepth, allsites$totaldepth)
 
 	groups<-c(rep("Verified",nrow(uniqueverifiedlist)),rep("Falsified",nrow(uniquefalsifiedlist)),rep("AllSites",nrow(allsites)))
 	df<-data.frame(groups, x)
 	
 	#test for signficance in difference between means for COMBINED COLONY DATA:
 #	allVSver<-t.test(allsites$totaldepth.y,verifieddepth)
-	wilcox.test(allsites$totaldepth.y,verifieddepth)
+	wilcox.test(allsites$totaldepth,verifieddepth)
 #	falseVSver<-t.test(falsifieddepth,verifieddepth)
   wilcox.test(falsifieddepth,verifieddepth)
 	p<- ggplot(df, aes(groups,x))
@@ -772,7 +776,7 @@ humanesophagusplot<-barplot(humanesophagus$Proportion, names.arg=humanesophagus$
 #y<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"),Proportion=c(.324,.378, .081, .054, .081, .081))
 #barplot(y$Proportion, names.arg=y$Types,col="gray", las=1,ylim=c(0,0.7), main="Distribution of SNP types for A. palmata", las=2)
 
-UVtypesDF<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"), Proportion=c(2500/35850, 24000/35850, 2400/35850, 2450/35850, 500/35850, 4000/35850))
+UVtypesDF<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"), Proportion=c(0.06, 0.70, 0.05, 0.06, 0.02,0.11))
 UVtypesDFplot<-barplot(UVtypesDF$Proportion, names.arg=UVtypesDF$Types, ylim=c(0, 0.7), main="High UV Spectrum",las=2, cex.names=1.5, cex.axis=1.5,cex.lab=1.5, cex.main=1.5) #Pleasance et al. 2009
 #Figure 4d
 #y<-data.frame(Types=c("A>G/T>C","G>A/C>T","A>T/T>A","A>C/T>G","G>C/C>G","G>T/C>A"),Proportion=c(.66,.21, .1, .009, .014, .009))
@@ -892,7 +896,7 @@ model_p <- pf(f[1], f[2], f[3], lower=FALSE)
 par(mfrow=c(1,1))
 op <- par(mar = c(5,7,4,2) + 0.1) #put more space on left hand margin of plot
 
-plot(size,denovofreq, col="blue",ylim=c(0,(max(freq)+(.1*max(freq)))), ylab="", pch=16, cex=2, las=1, xlab=expression(paste("Colony surface area (",cm^2,")")))
+plot(size,denovofreq, col="blue",ylim=c(0,(max(freq)+(.1*max(freq)))), ylab="Mutations per nucleotide per sample", mgp=c(4,1,0), pch=16, cex=2, las=1, xlab=expression(paste("Colony surface area (",cm^2,")")))
 clip(0,14000,0,0.0000005) #bounds the the regression lines
 abline(lmdenovo, col="blue",lty="dashed")
 points(size,freq, pch=17, cex=2)
