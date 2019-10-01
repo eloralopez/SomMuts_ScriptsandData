@@ -10,11 +10,15 @@ freq<-totalverified/totalbases/Nsamples
 lohfreq<-LoH/totalbases/Nsamples
 denovofreq<-GoH/totalbases/Nsamples
 
+
+perGBpersample<-totalbases*Nsamples/1000000000
+ages<-c(10,100,10,0)
+peryear<-totalverified/perGBpersample/ages
 lmdenovo<-lm(denovofreq~size)
 lmtotal<-lm(freq~size)
 lmLoH<-lm(lohfreq~size)
 
-modelSummary <- summary(lmdenovo)  # capture model summary as an object
+modelSummary <- summary(lmLoH)  # capture model summary as an object
 modelCoeffs <- modelSummary$coefficients  # model coefficients
 beta.estimate <- modelCoeffs["size", "Estimate"]  # get beta estimate for speed
 std.error <- modelCoeffs["size", "Std. Error"]  # get std.error for speed
