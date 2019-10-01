@@ -1,6 +1,6 @@
-      seqfile = AH75alignment_nostops.txt
-     treefile = AH75_tree.newick
-      outfile = AH75codemloutput.txt
+      seqfile = AH75_allsamples-3codingmuts.txt
+     treefile = AH75_allsamples-3codingmutstree.newick
+      outfile = AH75_allsamplescodemloutput-3codingmuts_allmodels.txt
 
         noisy = 3   * 0,1,2,3,9: how much rubbish on the screen
       verbose = 1   * 1: detailed output, 0: concise output
@@ -14,7 +14,7 @@
                     * models for codons:
                         * 0:one, 1:b, 2:2 or more dN/dS ratios for branches
 
-      NSsites = 0 1   * dN/dS among sites. 0:no variation, 1:neutral, 2:positive
+      NSsites =0 1 2 3 7 8   * dN/dS among sites. 0:no variation, 1:neutral, 2:positive
         icode = 0   * 0:standard genetic code; 1:mammalian mt; 2-10:see below
 
     fix_kappa = 0   * 1: kappa fixed, 0: kappa to be estimated
