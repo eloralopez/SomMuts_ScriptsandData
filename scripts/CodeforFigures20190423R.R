@@ -118,7 +118,7 @@ lapply(files,function(x) {
 	verifiedDeNovoLoHDF<-data.frame(Types=c("GoH","LoH"),Proportions=c(verDeNovocount,verLoHcount))
 	verifiedDeNovoLoHplot<-barplot(verifiedDeNovoLoHDF$Proportion,names.arg=verifiedDeNovoLoHDF$Types, ylim=c(0,20), main=colony,las=1, col=cols, cex.axis=1.5, cex.lab=1.5, cex.sub=2, cex.names = 2, cex.main=2, ylab="Number of Mutations") #Figure 2 c,d,e,f
 	verifiedDeNovoLoHDF$Proportion
-
+})
 	### COMPARING DEPTHS (FIGURE S1a-d) ###
 	verifieddepth<-(uniqueverifiedlist$totaldepth.y)
 	
@@ -263,8 +263,9 @@ colnames(mat)<-c("AH06", "AH09","AH75","AH88")
 rownames(mat)<-c("Inconclusive","Falsified","Verified")
 mat<-as.table(mat)
 par(mfrow=c(1,1))	
-barplot(mat, ylab= "Number of Mutations", ylim=c(0,250), legend.text = c("Inconclusive","Falsified","Verified")) # here is your stacked barplot with poppolys, nonpoppolys, and LoH/GoH - Figure S2
-
+op <- par(mar = c(4,7,4,2) + 0.1)
+barplot(mat, ylab= "", ylim=c(0,250), legend.text = c("Inconclusive","Falsified","Verified"), cex.axis=1.5, cex.names=1.5, las=1) # here is your stacked barplot with poppolys, nonpoppolys, and LoH/GoH - Figure S2
+title(ylab="Number of Mutations", line=4,cex.lab=1.5)
 #first run this wrapper script:
 #I got this from https://github.com/mrxiaohe/R_Functions/blob/master/functions/bar
 bar <- function(dv, factors, dataframe, percentage=FALSE, errbar=!percentage, half.errbar=TRUE, conf.level=.95, 
@@ -896,7 +897,8 @@ model_p <- pf(f[1], f[2], f[3], lower=FALSE)
 par(mfrow=c(1,1))
 op <- par(mar = c(5,7,4,2) + 0.1) #put more space on left hand margin of plot
 
-plot(size,denovofreq, col="blue",ylim=c(0,(max(freq)+(.1*max(freq)))), ylab="Mutations per nucleotide per sample", mgp=c(4,1,0), pch=16, cex=2, las=1, xlab=expression(paste("Colony surface area (",cm^2,")")))
+plot(size,denovofreq, col="blue",ylim=c(0,(max(freq)+(.1*max(freq)))), ylab="", mgp=c(4,1,0), pch=16, cex=2, las=1, xlab=expression(paste("Colony surface area (",cm^2,")")),cex.lab=1.5, cex.axis=1.5)
+title(ylab="Mutations per nucleotide per sample",cex.lab=1.5,line=5)
 clip(0,14000,0,0.0000005) #bounds the the regression lines
 abline(lmdenovo, col="blue",lty="dashed")
 points(size,freq, pch=17, cex=2)
