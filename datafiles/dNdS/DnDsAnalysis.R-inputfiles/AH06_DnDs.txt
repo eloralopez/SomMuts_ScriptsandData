@@ -1,4 +1,0 @@
-Site	Syn_or_NonSyn	Normal AA	Mutant AA	position of change	Normal SNP	Mutant SNP	In_ORF?	DeNovo_or_LoH	ORF_Length_inNucleotides	ORFdn	ORFds	Length*dn	Length*ds
-contig186310-67	NonSyn	Gln	Lys	1	C	A	no	LoH					
-contig217171-205	Syn				T	C	no	DeNovo					
-contig148570-137	NonSyn	Lys	Asn	3	C	A	no	LoH					
